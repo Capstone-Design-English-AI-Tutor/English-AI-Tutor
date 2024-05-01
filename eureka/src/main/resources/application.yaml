@@ -1,0 +1,18 @@
+  server:
+    port: 8761
+  spring:
+    application: name=eureka-server
+
+  # \uB124\uD2B8\uC6CC\uD06C \uAC19\uC740 \uC7A5\uC560 \uBC1C\uC0DD \uC2DC \uBAA8\uB4E0 \uC11C\uBE44\uC2A4\uAC00 Eureka\uC5D0\uC11C \uC77C\uAD04 \uD574\uC81C\uB418\uB294 \uD604\uC0C1\uC744 \uB9C9\uAE30 \uC704\uD574 \uC0AC\uC6A9
+  eureka:
+    server:
+      enable-self-preservation: true
+    client:
+      service-url:
+        defaultZone: http://localhost:8761/eureka/
+  # cleint\uAC00 eureka server\uC5D0 \uB4F1\uB85D\uD560\uC9C0 \uC5EC\uBD80\uB97C \uACB0\uC815. eureka server \uB294 client\uB85C \uB4F1\uB85D\uD558\uC9C0 \uC54A\uB294\uB2E4.
+      register-with-eureka: false
+
+  # eureka server \uB85C\uBD80\uD130 \uC778\uC2A4\uD134\uC2A4\uB4E4\uC758 \uC815\uBCF4\uB97C \uC8FC\uAE30\uC801\uC73C\uB85C \uAC00\uC838\uC62C \uAC83\uC778\uC9C0\uB97C \uC124\uC815. eureka server \uB294 client\uB85C \uB4F1\uB85D\uD558\uC9C0 \uC54A\uB294\uB2E4.
+      fetch-registry: false
+
