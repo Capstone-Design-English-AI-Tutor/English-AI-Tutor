@@ -31,11 +31,11 @@ import java.util.Date;
 
 @Component
 @Slf4j
-public class AuthenticationHeaderGatewayFilterFactory extends AbstractGatewayFilterFactory<AuthenticationHeaderGatewayFilterFactory.Config> {
+public class AuthenticationGatewayFilterFactory extends AbstractGatewayFilterFactory<AuthenticationGatewayFilterFactory.Config> {
     private ObjectMapper objectMapper = new ObjectMapper();
     private Key key;
 
-    public AuthenticationHeaderGatewayFilterFactory(@Value("${spring.jwt.secret}") String secretKey) {
+    public AuthenticationGatewayFilterFactory(@Value("${spring.jwt.secret}") String secretKey) {
         super(Config.class);
         this.key = key = Keys.hmacShaKeyFor(Base64.getEncoder().encodeToString(secretKey.getBytes()).getBytes());
     }
