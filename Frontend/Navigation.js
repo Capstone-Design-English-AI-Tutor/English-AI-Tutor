@@ -8,6 +8,7 @@ import Scan from "./screens/Scan";
 import Voca from "./screens/Voca";
 import News from "./screens/News";
 import Chatting from "./screens/Chatting";
+import Chat from "./screens/Chat";
 
 const Tab = createBottomTabNavigator();
 
@@ -64,8 +65,8 @@ function BottomTabNavigation() {
           }}
         />
         <Tab.Screen
-          name="Chatting"
-          component={Chatting}
+          name="Chat"
+          component={Chat}
           options={{
             title: "챗봇과 대화하기",
             tabBarLabel: "회화 챗봇",
