@@ -1,82 +1,93 @@
 import React from "react";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createStackNavigator } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet } from "react-native";
 
+import SignIn from "./screens/SignIn";
+import KakaoLogin from "./screens/KakaoLogin";
 import Scan from "./screens/Scan";
 import Voca from "./screens/Voca";
 import News from "./screens/News";
 import Chatting from "./screens/Chatting";
-import Chat from "./screens/Chat";
+import VoiceChat from "./screens/VoiceChat";
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+const ChatStack = createStackNavigator();
+
+function ChatStackScreen() {
+  return (
+    <ChatStack.Navigator>
+      <ChatStack.Screen
+        name="Chatting"
+        component={Chatting}
+        options={{ headerShown: false }}
+      />
+      <ChatStack.Screen
+        name="VoiceChat"
+        component={VoiceChat}
+        options={{ title: "음식 주문하기" }}
+      />
+    </ChatStack.Navigator>
+  );
+}
 
 function BottomTabNavigation() {
   return (
-    <NavigationContainer
-      theme={{
-        ...DefaultTheme,
-        colors: {
-          ...DefaultTheme.colors,
-          background: "white",
-        },
-      }}
+    <Tab.Navigator
+      initialRouteName="Scan"
+      screenOptions={({ route }) => ({
+        tabBarVisible: getTabBarVisibility(route),
+        tabBarActiveTintColor: "#3E1C96",
+        tabBarInactiveTintColor: "#C8B9EF",
+      })}
     >
-      <Tab.Navigator
-        initialRouteName="Scan"
-        screenOptions={({ route }) => ({
-          tabBarVisible: getTabBarVisibility(route),
-          tabBarActiveTintColor: "#3E1C96",
-          tabBarInactiveTintColor: "#C8B9EF",
-        })}
-      >
-        <Tab.Screen
-          name="Scan"
-          component={Scan}
-          options={{
-            title: "단어/발음 테스트",
-            tabBarLabel: "단어/발음 테스트",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="scan" color={color} size={size} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Voca"
-          component={Voca}
-          options={{
-            title: "저장한 단어",
-            tabBarLabel: "저장한 단어",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="bookmark" color={color} size={size} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="News"
-          component={News}
-          options={{
-            title: "영어 작문하기",
-            tabBarLabel: "영어 작문",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="newspaper-outline" color={color} size={size} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Chat"
-          component={Chat}
-          options={{
-            title: "챗봇과 대화하기",
-            tabBarLabel: "회화 챗봇",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="chatbubbles" color={color} size={size} />
-            ),
-          }}
-        />
-      </Tab.Navigator>
-    </NavigationContainer>
+      <Tab.Screen
+        name="Scan"
+        component={Scan}
+        options={{
+          title: "단어 테스트",
+          tabBarLabel: "단어 테스트",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="scan" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Voca"
+        component={Voca}
+        options={{
+          title: "저장한 단어",
+          tabBarLabel: "저장한 단어",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bookmark" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="News"
+        component={News}
+        options={{
+          title: "영어 작문하기",
+          tabBarLabel: "영어 작문",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="newspaper-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Chatting"
+        component={ChatStackScreen}
+        options={{
+          title: "챗봇과 대화하기",
+          tabBarLabel: "회화 챗봇",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubbles" color={color} size={size} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
   );
 }
 
@@ -92,4 +103,36 @@ function getTabBarVisibility(route) {
   return false;
 }
 
-export default BottomTabNavigation;
+function AppNavigator() {
+  return (
+    <NavigationContainer
+      theme={{
+        ...DefaultTheme,
+        colors: {
+          ...DefaultTheme.colors,
+          background: "white",
+        },
+      }}
+    >
+      <Stack.Navigator initialRouteName="SignIn">
+        <Stack.Screen
+          name="SignIn"
+          component={SignIn}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="KakaoLogin"
+          component={KakaoLogin}
+          options={{ title: "카카오 로그인" }}
+        />
+        <Stack.Screen
+          name="Main"
+          component={BottomTabNavigation}
+          options={{ headerShown: false }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+export default AppNavigator;
