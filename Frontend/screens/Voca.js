@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, FlatList } from "react-native";
+import * as Speech from "expo-speech";
 import IconButton from "../components/UI/IconButton";
 
 const data = [
@@ -14,6 +15,19 @@ const data = [
 ];
 
 function renderItem({ item }) {
+  // 단어 눌렀을 때 TTS
+  const speak = (word) => {
+    Speech.speak(word, {
+      language: "en-US",
+      pitch: 1.0,
+      rate: 1.0,
+      volume: 1.0,
+      onError: (error) => {
+        console.error("An error occurred:", error);
+      },
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.contentContainer}>
@@ -26,6 +40,7 @@ function renderItem({ item }) {
           size={36}
           style={styles.icon}
           color="#B7B7B7"
+          onPress={() => speak(item.word)} // 아이콘 눌렀을 때 소리 재생
         />
       </View>
     </View>
