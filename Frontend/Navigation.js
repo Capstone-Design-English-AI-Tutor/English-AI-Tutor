@@ -11,10 +11,12 @@ import Voca from "./screens/Voca";
 import News from "./screens/News";
 import Chatting from "./screens/Chatting";
 import VoiceChat from "./screens/VoiceChat";
+import Camera from "./screens/Camera";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const ChatStack = createStackNavigator();
+const ScanStack = createStackNavigator();
 
 function ChatStackScreen() {
   return (
@@ -33,6 +35,23 @@ function ChatStackScreen() {
   );
 }
 
+function ScanStackScreen() {
+  return (
+    <ScanStack.Navigator>
+      <ScanStack.Screen
+        name="Scan"
+        component={Scan}
+        options={{ headerShown: false }}
+      />
+      <ScanStack.Screen
+        name="Camera"
+        component={Camera}
+        options={{ title: "사진 찍기" }}
+      />
+    </ScanStack.Navigator>
+  );
+}
+
 function BottomTabNavigation() {
   return (
     <Tab.Navigator
@@ -45,7 +64,7 @@ function BottomTabNavigation() {
     >
       <Tab.Screen
         name="Scan"
-        component={Scan}
+        component={ScanStackScreen}
         options={{
           title: "단어 테스트",
           tabBarLabel: "단어 테스트",

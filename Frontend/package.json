@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~3.2.1",
+    "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-native-community/async-storage": "^1.12.1",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-navigation/bottom-tabs": "^6.5.20",
@@ -43,7 +44,9 @@
     "react-native-uuid": "^2.0.2",
     "react-native-web": "^0.19.12",
     "react-native-websocket": "^1.0.2",
-    "react-native-webview": "13.8.6"
+    "react-native-webview": "13.8.6",
+    "expo-camera": "~15.0.10",
+    "expo-media-library": "~16.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
