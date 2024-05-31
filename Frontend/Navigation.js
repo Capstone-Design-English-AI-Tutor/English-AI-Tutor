@@ -12,6 +12,8 @@ import News from "./screens/News";
 import Chatting from "./screens/Chatting";
 import VoiceChat from "./screens/VoiceChat";
 import Camera from "./screens/Camera";
+import Test from "./screens/Test";
+import TestSentence from "./screens/TestSentence";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -46,7 +48,20 @@ function ScanStackScreen() {
       <ScanStack.Screen
         name="Camera"
         component={Camera}
-        options={{ title: "사진 찍기" }}
+        options={{
+          title: "사진 찍기",
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <ScanStack.Screen
+        name="Test"
+        component={Test}
+        options={{ headerShown: false }}
+      />
+      <ScanStack.Screen
+        name="TestSentence"
+        component={TestSentence}
+        options={{ headerShown: false }}
       />
     </ScanStack.Navigator>
   );
@@ -115,13 +130,12 @@ function getTabBarVisibility(route) {
     ? route.state.routes[route.state.index].name
     : route.params?.screen || "Scan";
 
-  if (routeName === "Scan" || routeName === "Voca") {
-    return true;
+  if (routeName === "Test") {
+    return false;
   }
 
-  return false;
+  return true;
 }
-
 function AppNavigator() {
   return (
     <NavigationContainer

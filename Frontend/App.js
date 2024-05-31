@@ -1,6 +1,9 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { TestTypeProvider } from "./context/TestContext";
 import Navigation from "./Navigation";
 export default function App() {
-  return <Navigation />;
+  return (
+    <TestTypeProvider>
+      <Navigation />
+    </TestTypeProvider>
+  );
 }

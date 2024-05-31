@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { View, TouchableOpacity, Text, StyleSheet, Button } from "react-native";
 
 function Camera({ navigation }) {
   const [facing, setFacing] = useState("back");
