@@ -1,0 +1,93 @@
+spring:
+  application:
+    name: conversation
+  profiles:
+    group:
+      dev: dev
+      prod: prod
+      test: test
+      default: default
+server:
+  port: 12304
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: 'jdbc:h2:~/conversation'
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  redis:
+    host: localhost
+    port: 6379
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: ${SPRING_CONVERSATION_SERVICE_H2_URL}
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  redis:
+    host: ${SPRING_CONVERSATION_SERVICE_REDIS_HOST}
+    port: ${SPRING_CONVERSATION_SERVICE_REDIS_PORT}
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+openapi:
+  service:
+    title: conversation-service doc
+    version: 1.0.0
+    url: http://gateway:12300
+springdoc:
+  api-docs:
+    path: /conversation-service/api-docs
+  swagger-ui:
+    path: /conversation-service/swagger-ui
