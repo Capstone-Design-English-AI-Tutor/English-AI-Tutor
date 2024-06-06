@@ -7,14 +7,14 @@ export default function SignIn() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.homeText}>로그인 화면</Text>
+      <Text style={styles.homeText}>English AI Tutor</Text>
       <TouchableOpacity
         onPress={() =>
           navigation.navigate("KakaoLogin", { screen: "KakaoLogin" })
         }
         style={styles.nextBottom}
       >
-        <Text style={styles.bottomText}>카카오 화면으로</Text>
+        <Text style={styles.bottomText}>카카오로 시작</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate("Main")}>
         <Text style={styles.bottomText}>메인</Text>

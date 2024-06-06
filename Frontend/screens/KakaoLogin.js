@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { Text, View, StyleSheet, ActivityIndicator } from "react-native";
 import { WebView } from "react-native-webview";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const REST_API_KEY = "";
+const REST_API_KEY = "a06411c55dacfcfc075606f7c2ed0490";
 const REDIRECT_URI = "http://34.22.72.154:12300/api/auth/login/kakao";
 const INJECTED_JAVASCRIPT = `window.ReactNativeWebView.postMessage('message from webView')`;
 
 const KakaoLogin = () => {
   const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
 
   const handleKakaoLogin = async (authorizationCode) => {
     setLoading(true);
@@ -25,11 +28,16 @@ const KakaoLogin = () => {
 
       const data = await response.json();
       console.log("Success:", data);
-      // 로그인 후 처리 로직을 여기에 추가
+
+      // 토큰을 AsyncStorage에 저장
+      //await AsyncStorage.setItem("userToken", data.token);
+
+      // 메인 스크린으로 이동
     } catch (error) {
       console.error("Error:", error);
     } finally {
       setLoading(false);
+      navigation.navigate("Main");
     }
   };
 

@@ -10,10 +10,11 @@ import Scan from "./screens/Scan";
 import Voca from "./screens/Voca";
 import News from "./screens/News";
 import Chatting from "./screens/Chatting";
-import VoiceChat from "./screens/VoiceChat";
 import Camera from "./screens/Camera";
 import Test from "./screens/Test";
 import TestSentence from "./screens/TestSentence";
+
+import VoiceChat from "./screens/VoiceChat";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -130,7 +131,7 @@ function getTabBarVisibility(route) {
     ? route.state.routes[route.state.index].name
     : route.params?.screen || "Scan";
 
-  if (routeName === "Test") {
+  if (routeName === "Test" || routeName === "Camera" || routeName === "TestSentence") {
     return false;
   }
 

@@ -7,11 +7,13 @@ import {
   Image,
   FlatList,
 } from "react-native";
+
 import { useNavigation } from "@react-navigation/native";
 import friend from "../assets/friend.png";
 import burger from "../assets/burger.png";
 import shopping from "../assets/shopping.png";
 import car from "../assets/car.png";
+
 const DATA = [
   { id: "1", title: "새학기 친구 사귀기", image: friend },
   { id: "2", title: "식당에서 음식 주문하기", image: burger },
@@ -21,6 +23,7 @@ const DATA = [
 
 function Chatting() {
   const navigation = useNavigation();
+  
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.item}
