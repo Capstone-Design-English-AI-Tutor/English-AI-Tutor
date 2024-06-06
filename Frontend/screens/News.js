@@ -1,75 +1,102 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-
-import image1 from "../assets/image1.png";
-import image2 from "../assets/image2.png";
-import image3 from "../assets/image3.png";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  ScrollView,
+  FlatList,
+} from "react-native";
 
 function News() {
   const [selectedLevel, setSelectedLevel] = useState(null);
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState(null);
 
   const handleLevelPress = (level) => {
     setSelectedLevel(level);
   };
 
+  useEffect(() => {
+    if (selectedLevel) {
+      fetchArticles();
+    }
+  }, [selectedLevel]);
+
+  const fetchArticles = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `http://34.22.72.154:12300/api/writing/news/level/${selectedLevel}`
+      );
+      const data = await response.json();
+      setArticles(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderArticleItem = ({ item }) => (
+    <TouchableOpacity
+      style={[styles.item, selectedArticle === item && styles.selectedItem]}
+      onPress={() => setSelectedArticle(item)}
+    >
+      <Image source={{ uri: item.s3Url }} style={styles.image} />
+      <View style={styles.news}>
+        <Text style={styles.title}>{item.title}</Text>
+        <View style={styles.categoryContainer}>
+          <Text style={styles.categoryText}>{item.category}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+
   return (
     <View>
       <View style={styles.optionContainer}>
         <Text style={styles.text}>난이도를 선택해주세요</Text>
-        <View style={styles.container}>
-          <TouchableOpacity
-            style={[
-              styles.option,
-              selectedLevel === "Level 1" && { backgroundColor: "#717BBC" },
-            ]}
-            activeOpacity={0.7}
-            onPress={() => handleLevelPress("Level 1")}
-          >
-            <Text style={styles.buttonText}>Level 1</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.option,
-              selectedLevel === "Level 2" && { backgroundColor: "#717BBC" },
-            ]}
-            activeOpacity={0.7}
-            onPress={() => handleLevelPress("Level 2")}
-          >
-            <Text style={styles.buttonText}>Level 2</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.option,
-              selectedLevel === "Level 3" && { backgroundColor: "#717BBC" },
-            ]}
-            activeOpacity={0.7}
-            onPress={() => handleLevelPress("Level 3")}
-          >
-            <Text style={styles.buttonText}>Level 3</Text>
-          </TouchableOpacity>
-        </View>
+        <ScrollView horizontal={true} contentContainerStyle={styles.container}>
+          {[1, 2, 3, 4, 5, 6].map((level) => (
+            <TouchableOpacity
+              key={level}
+              style={[
+                styles.option,
+                selectedLevel === level && { backgroundColor: "#717BBC" },
+              ]}
+              activeOpacity={0.7}
+              onPress={() => handleLevelPress(level)}
+            >
+              <Text style={styles.buttonText}>Level {level}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
-      <View>
-        <View style={styles.newsContainer}>
-          <Text style={styles.text}>기사를 선택해주세요</Text>
-          <TouchableOpacity style={styles.item}>
-            <Image source={image1} style={styles.image} />
-            <Text>People breathe bad air</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.item}>
-            <Image source={image2} style={styles.image} />
-            <Text>Princess of Wales has cancer</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.item}>
-            <Image source={image3} style={styles.image} />
-            <Text>German football ends a deal with Adidas</Text>
-          </TouchableOpacity>
+      {loading ? (
+        <ActivityIndicator size="large" color="0000ff" />
+      ) : (
+        <View>
+          <View style={styles.newsContainer} horizontal={false}>
+            <Text style={styles.text}>기사를 선택해주세요</Text>
+            <FlatList
+              data={articles}
+              renderItem={renderArticleItem}
+              keyExtractor={(item) => item.id.toString()}
+            />
+          </View>
+          {selectedArticle && (
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>테스트 시작</Text>
+            </TouchableOpacity>
+          )}
         </View>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>테스트 시작</Text>
-        </TouchableOpacity>
-      </View>
+      )}
     </View>
   );
 }
@@ -84,6 +111,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     marginLeft: 10,
+    paddingRight: 20,
     backgroundColor: "white",
   },
   option: {
@@ -111,10 +139,33 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     marginVertical: 7,
   },
+  selectedItem: {
+    borderColor: "#999999", // 선택된 기사의 테두리 색상
+    borderWidth: 2, // 선택된 기사의 테두리 두께
+  },
+  news: {
+    flex: 1,
+    flexDirection: "column",
+  },
   image: {
-    width: 110,
+    width: 100,
     height: 60,
     marginRight: 10,
+  },
+  title: {
+    flex: 1,
+  },
+  categoryContainer: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#EBE9FE",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  categoryText: {
+    fontSize: 10,
   },
   button: {
     width: 380,
@@ -124,6 +175,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 5,
+    marginBottom: 100,
   },
   buttonText: {
     color: "white",
