@@ -18,6 +18,7 @@ import axios from "axios";
 import CameraIcon from "../assets/camera.png";
 import GalleryIcon from "../assets/gallery.png";
 import { TestContext } from "../context/TestContext";
+import Toast from "react-native-toast-message";
 
 function Scan({ navigation, route }) {
   const [image, setImage] = useState(null);
@@ -27,7 +28,7 @@ function Scan({ navigation, route }) {
   const [editEnglish, setEditEnglish] = useState("");
   const [editKorean, setEditKorean] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
-  const { testType, setTestType, setQuizList, setSentenceList } =
+  const { testType, setTestType, setQuizList, setSentenceList, sentenceList } =
     useContext(TestContext);
 
   const pickImage = async (source) => {
@@ -104,12 +105,43 @@ function Scan({ navigation, route }) {
           },
         }
       );
-      if (testType === "sentence") {
-        setSentenceList(response.data);
-        console.log(response.data);
+      if (response.status === 200) {
+        const responseData = response.data;
+        if (testType === "sentence") {
+          setSentenceList(responseData);
+          console.log(responseData);
+          if (responseData && responseData.length > 0) {
+            navigation.navigate("TestSentence");
+          } else {
+            Toast.show({
+              type: 'error',
+              text1: '테스트 생성 중입니다...',
+              text2: '잠시 후에 다시 시도해 주세요'
+            });
+          }
+        } else {
+          setQuizList(responseData.quizList);
+          console.log(responseData.quizList);
+          if (responseData.quizList && responseData.quizList.length > 0) {
+            if (testType === "english") {
+              navigation.navigate("Test");
+            } else if (testType === "korean") {
+              navigation.navigate("TestKorean");
+            }
+          } else {
+            Toast.show({
+              type: 'info',
+              text1: '테스트 생성 중입니다...',
+              text2: '잠시 후에 다시 시도해 주세요'
+            });
+          }
+        }
       } else {
-        setQuizList(response.data.quizList);
-        console.log(response.data.quizList);
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: '잠시 후에 다시 시도해 주세요'
+        });
       }
     } catch (error) {
       console.error(error);
@@ -285,13 +317,6 @@ function Scan({ navigation, route }) {
             onPress={() => {
               CreateTest(testType);
               setModalVisible(false);
-              if (testType === "sentence") {
-                navigation.navigate("TestSentence");
-              } else if (testType === "english") {
-                navigation.navigate("Test");
-              } else {
-                navigation.navigate("TestKorean");
-              }
             }}
           >
             <Text style={styles.startText}>시작</Text>

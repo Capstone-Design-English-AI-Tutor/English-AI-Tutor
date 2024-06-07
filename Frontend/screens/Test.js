@@ -79,7 +79,7 @@ function Test() {
       <View style={styles.container}>
         <Text style={styles.resultTitle}>문제 풀이 결과</Text>
         <Text style={styles.resultText}>
-          맞은 단어: {score} / {quizList.length}
+          맞은 단어: {score} / {currentIndex}
         </Text>
         <FlatList
           data={results}

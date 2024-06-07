@@ -41,7 +41,7 @@ function TestKorean() {
     Toast.show({
       type: "submit",
       text1: `${currentQuiz.quiz} : ${currentQuiz.answer}`,
-      text2: `내가 적은 답: ${userAnswer}`,
+      text2: `내가 적은 답: ${currentQuiz.userAnswer}`,
     });
     setUserAnswer("");
     setCurrentIndex(currentIndex + 1);
