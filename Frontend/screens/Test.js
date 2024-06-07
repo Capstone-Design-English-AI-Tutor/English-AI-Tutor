@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { TestContext } from "../context/TestContext";
+import Toast from "react-native-toast-message";
 
 function Test() {
   const { quizList } = useContext(TestContext);
@@ -30,11 +31,24 @@ function Test() {
         isCorrect,
       },
     ]);
-    isCorrect && setScore(score + 1);
     if (isCorrect) {
-      Alert.alert("정답입니다!", `${currentQuiz.quiz} : ${currentQuiz.answer}`);
+      setScore(score + 1);
+      Toast.show({
+        type: 'success',
+        text1: '정답입니다!',
+        text2: `${currentQuiz.quiz} : ${currentQuiz.answer}`,
+        top: 200,
+        visibilityTime: 2000, // 2초 동안 표시
+        autoHide: true,
+      });
     } else {
-      Alert.alert("오답입니다.", `올바른 답은 ${currentQuiz.answer}입니다.`);
+      Toast.show({
+        type: 'error',
+        text1: '오답입니다.',
+        text2: `올바른 답은 ${currentQuiz.answer}입니다.`,
+        top: 200,
+        autoHide: true,
+      });
     }
     setUserAnswer("");
     setCurrentIndex(currentIndex + 1);
@@ -64,6 +78,7 @@ function Test() {
             </View>
           )}
         />
+        <Toast ref={(ref) => Toast.setRef(ref)} />
       </View>
     );
   }
@@ -83,6 +98,7 @@ function Test() {
       >
         <Text style={styles.text}>제출</Text>
       </TouchableOpacity>
+      <Toast ref={(ref) => Toast.setRef(ref)} />
     </View>
   );
 }
@@ -97,14 +113,16 @@ const styles = StyleSheet.create({
   },
   quizText: {
     fontSize: 18,
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: 16,
+    marginLeft: 20,
   },
   input: {
     height: 40,
     borderColor: "gray",
     borderWidth: 1,
     marginBottom: 16,
+    marginHorizontal: 15,
     paddingHorizontal: 8,
   },
   resultItem: {
@@ -114,14 +132,17 @@ const styles = StyleSheet.create({
   },
   button: {
     width: 60,
-    height: 60,
+    height: 40,
     backgroundColor: "#2D31A6",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 10,
+    marginLeft: 20,
+    marginTop: 10,
   },
   text: {
     color: "#fff",
+    fontSize: 15,
   },
   correct: {
     color: "#45C486",
