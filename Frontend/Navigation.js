@@ -12,6 +12,7 @@ import News from "./screens/News";
 import Chatting from "./screens/Chatting";
 import Camera from "./screens/Camera";
 import Test from "./screens/Test";
+import TestKorean from "./screens/TestKorean";
 import TestSentence from "./screens/TestSentence";
 
 import VoiceChat from "./screens/VoiceChat";
@@ -57,6 +58,11 @@ function ScanStackScreen() {
       <ScanStack.Screen
         name="Test"
         component={Test}
+        options={{ headerShown: false }}
+      />
+      <ScanStack.Screen
+        name="TestKorean"
+        component={TestKorean}
         options={{ headerShown: false }}
       />
       <ScanStack.Screen

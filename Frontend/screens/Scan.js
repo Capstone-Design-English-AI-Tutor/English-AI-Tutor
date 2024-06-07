@@ -10,7 +10,7 @@ import {
   Modal,
   Pressable,
   ActivityIndicator,
-  TextInput
+  TextInput,
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
@@ -118,7 +118,7 @@ function Scan({ navigation, route }) {
   };
 
   const handleEdit = (index, field, value) => {
-    if (field === 'english') {
+    if (field === "english") {
       setEditEnglish(value);
     } else {
       setEditKorean(value);
@@ -132,8 +132,8 @@ function Scan({ navigation, route }) {
     );
     setResult(updatedResult);
     setEditIndex(null);
-    setEditEnglish('');
-    setEditKorean('');
+    setEditEnglish("");
+    setEditKorean("");
   };
 
   return (
@@ -170,14 +170,19 @@ function Scan({ navigation, route }) {
                     <TextInput
                       style={styles.input}
                       value={editEnglish}
-                      onChangeText={(text) => handleEdit(index, 'english', text)}
+                      onChangeText={(text) =>
+                        handleEdit(index, "english", text)
+                      }
                     />
                     <TextInput
                       style={styles.input}
                       value={editKorean}
-                      onChangeText={(text) => handleEdit(index, 'korean', text)}
+                      onChangeText={(text) => handleEdit(index, "korean", text)}
                     />
-                    <TouchableOpacity style={styles.submitButton} onPress={submitEdit}>
+                    <TouchableOpacity
+                      style={styles.submitButton}
+                      onPress={submitEdit}
+                    >
                       <Text style={styles.submitButtonText}>수정</Text>
                     </TouchableOpacity>
                   </>
@@ -280,9 +285,13 @@ function Scan({ navigation, route }) {
             onPress={() => {
               CreateTest(testType);
               setModalVisible(false);
-              testType === "sentence"
-                ? navigation.navigate("TestSentence")
-                : navigation.navigate("Test");
+              if (testType === "sentence") {
+                navigation.navigate("TestSentence");
+              } else if (testType === "english") {
+                navigation.navigate("Test");
+              } else {
+                navigation.navigate("TestKorean");
+              }
             }}
           >
             <Text style={styles.startText}>시작</Text>
