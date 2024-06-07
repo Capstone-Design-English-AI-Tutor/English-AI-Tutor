@@ -14,7 +14,7 @@ export default function SignIn() {
         }
         style={styles.nextBottom}
       >
-        <Text style={styles.bottomText}>카카오로 시작</Text>
+        <Text style={styles.bottomText}>카카오 로그인</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate("Main")}>
         <Text style={styles.bottomText}>메인</Text>
@@ -28,20 +28,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#8B93C7",
   },
   homeText: {
-    fontSize: 24,
-    marginBottom: 20,
+    fontSize: 40,
+    fontWeight: 'bold',
+    marginBottom: 80,
+    color: "white",
   },
   nextBottom: {
     backgroundColor: "#FFEB3B",
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 5,
+    borderRadius: 10,
+    width: 300,
+    alignItems: "center",
   },
   bottomText: {
-    fontSize: 18,
+    fontSize: 17,
     color: "black",
   },
 });
