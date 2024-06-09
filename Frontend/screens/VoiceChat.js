@@ -13,17 +13,18 @@ import * as FileSystem from "expo-file-system";
 import recordingimg from "../assets/recording.png";
 import recordingstopimg from "../assets/recordingstop.png";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import axios from "axios";
 
 const VoiceChatting = ({ route }) => {
   const { id } = route.params;
 
   const [log, setLog] = useState("");
-  const [messages, setMessages] = useState([]);
   const [recording, setRecording] = useState(null);
   const [recordingUri, setRecordingUri] = useState(null);
-  const [receivedMsg, setReceivedMsg] = useState([]);
   const [audio, setAudio] = useState(null); // 웹소켓 응답
   const [loading, setLoading] = useState(false);
+  const [hint, setHint] = useState("");
+
   const ws = useRef(null);
   const soundRef = useRef(new Audio.Sound());
 
@@ -33,7 +34,8 @@ const VoiceChatting = ({ route }) => {
     );
 
     ws.current.onopen = () => {
-      setLog("Connected to WebSocket server");
+      setLog("서버에 접속했습니다.");
+      setHint("");
       console.log("WebSocket connected");
     };
 
@@ -45,10 +47,6 @@ const VoiceChatting = ({ route }) => {
         const uri = await saveBase64AsAudioFile(base64Audio);
         setAudio(uri);
         await playAudio(uri);
-        setReceivedMsg((prevMsg) => [
-          ...prevMsg,
-          { type: "received", content: "Received", uri: uri },
-        ]);
       } else {
         console.log("Receive message of unknown type:", event.data);
       }
@@ -56,12 +54,13 @@ const VoiceChatting = ({ route }) => {
 
     ws.current.onerror = (error) => {
       console.log("WebSocket error:", error);
-      setLog(`WebSocket error: ${error.message}`);
+      setLog(`오류가 발생했습니다: ${error.message}`);
       setLoading(false); // 에러가 발생하면 로딩 상태를 false로 설정
     };
 
     ws.current.onclose = (event) => {
-      setLog(`Disconnected from WebSocket server: ${event.reason}`);
+      setLog(`서버 접속을 해제했습니다.`);
+      setHint("");
       console.log("WebSocket connection closed");
     };
 
@@ -154,11 +153,7 @@ const VoiceChatting = ({ route }) => {
         // ArrayBuffer를 WebSocket을 통해 전송
         setLoading(true); // 전송 시작시 로딩 상태를 true로 설정
         ws.current.send(arrayBuffer);
-
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { type: "sent", content: "Sent audio message", uri: mp3Uri },
-        ]);
+        setHint("");
       };
       reader.readAsArrayBuffer(fileBlob);
     } catch (error) {
@@ -167,15 +162,19 @@ const VoiceChatting = ({ route }) => {
     }
   };
 
-  // const playRecording = async (uri) => {
-  //   if (uri) {
-  //     const { sound } = await Audio.Sound.createAsync({ uri });
-  //     await sound.playAsync();
-  //     console.log("리코딩", recordingUri);
-  //   } else {
-  //     console.log("No recording to play");
-  //   }
-  // };
+  const handleGetHint = async () => {
+    try {
+      const channelId = "110ec58a-a0f2-4ac4-8393-c866d813b8d1"; // 필요한 채널 ID를 여기에 입력
+      const result = await axios.post(
+        `http://34.22.72.154:12300/api/conversation/help?channelId=${channelId}`
+      );
+      console.log(result.data);
+      setHint(result.data);
+    } catch (error) {
+      console.error(error);
+      setHint("Error occurred while fetching help. Please try again.");
+    }
+  };
 
   const disconnectWebSocket = () => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
@@ -188,47 +187,26 @@ const VoiceChatting = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text>{log}</Text>
+      <View style={styles.topContainer}>
+        <Text>{log}</Text>
+      
+      <TouchableOpacity style={styles.stopButton} onPress={disconnectWebSocket}>
+        <Text>종료하기</Text>
+      </TouchableOpacity>
+      </View>
       {loading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
         </View>
       )}
-      {/* <FlatList
-        data={messages}
-        renderItem={({ item }) => (
-          <View
-            style={[
-              styles.message,
-              item.type === "sent" ? styles.sent : styles.received,
-            ]}
-          >
-            <Text>{item.content}</Text>
-            {item.uri && (
-              <Button title="Play" onPress={() => playRecording(item.uri)} />
-            )}
-          </View>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-      /> */}
-      {/* <FlatList
-        data={receivedMsg}
-        renderItem={({ item }) => (
-          <View
-            style={[
-              styles.message,
-              item.type === "received" ? styles.received : styles.sent,
-            ]}
-          >
-            <Text>{item.content}</Text>
-            {audio && <Button title="Play" onPress={() => playAudio(audio)} />}
-          </View>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-      /> */}
+      {hint && (
+        <View style={styles.hintContainer}>
+          <Text style={styles.hintText}>{hint}</Text>
+        </View>
+      )}
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.button} onPress={disconnectWebSocket}>
-          <Text>종료하기</Text>
+        <TouchableOpacity style={styles.button} onPress={handleGetHint}>
+          <Text>힌트 보기</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={recording ? stopRecording : startRecording}>
           <Image source={recording ? recordingstopimg : recordingimg} />
@@ -237,7 +215,7 @@ const VoiceChatting = ({ route }) => {
           style={styles.button}
           onPress={() => playAudio(audio)}
         >
-          <Text>응답 다시 듣기</Text>
+          <Text>다시 듣기</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -250,6 +228,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+  },
+  topContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 10,
+    justifyContent: "space-between"
   },
   message: {
     marginVertical: 5,
@@ -277,15 +262,34 @@ const styles = StyleSheet.create({
   },
   bottomContainer: {
     display: "flex",
-    flex: 1,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    position: "absolute",
+    left: 30,
+    bottom: 80,
   },
   button: {
     padding: 20,
     backgroundColor: "#d9d9d9",
     borderRadius: 20,
     marginHorizontal: 20,
+  },
+  stopButton: {
+    padding: 12,
+    backgroundColor: "#F88600",
+    borderRadius: 20,
+    marginRight: 20,
+    marginLeft: 10,
+  },
+  hintContainer: {
+    padding: 12,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 5,
+    marginTop: 50,
+  },
+  hintText: {
+    fontSize: 17,
+    color: "#333",
   },
 });
