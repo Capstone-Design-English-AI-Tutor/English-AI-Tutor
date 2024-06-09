@@ -14,6 +14,7 @@ import Camera from "./screens/Camera";
 import Test from "./screens/Test";
 import TestKorean from "./screens/TestKorean";
 import TestSentence from "./screens/TestSentence";
+import WritingNews from "./screens/WritingNews";
 
 import VoiceChat from "./screens/VoiceChat";
 
@@ -21,6 +22,7 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const ChatStack = createStackNavigator();
 const ScanStack = createStackNavigator();
+const WritingStack = createStackNavigator();
 
 function ChatStackScreen() {
   return (
@@ -33,7 +35,7 @@ function ChatStackScreen() {
       <ChatStack.Screen
         name="VoiceChat"
         component={VoiceChat}
-        options={{ title: "음식 주문하기" }}
+        options={{ title: "회화 챗봇" }}
       />
     </ChatStack.Navigator>
   );
@@ -74,6 +76,24 @@ function ScanStackScreen() {
   );
 }
 
+function WritingStackScreen() {
+  return (
+    < WritingStack.Navigator>
+      < WritingStack.Screen
+        name="Writing"
+        component={News}
+        options={{ headerShown: false }}
+      />
+      < WritingStack.Screen
+        name="WritingNews"
+        component={WritingNews}
+        options={{ headerShown: "영어 작문" }}
+      />
+    </ WritingStack.Navigator>
+  );
+}
+
+
 function BottomTabNavigation() {
   return (
     <Tab.Navigator
@@ -108,7 +128,7 @@ function BottomTabNavigation() {
       />
       <Tab.Screen
         name="News"
-        component={News}
+        component={WritingStackScreen}
         options={{
           title: "영어 작문하기",
           tabBarLabel: "영어 작문",

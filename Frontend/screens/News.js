@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -9,15 +9,24 @@ import {
   ScrollView,
   FlatList,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 function News() {
+  const navigation = useNavigation();
+
+  const [newsSentenceList, setNewsSentenceList] = useState([]);
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
 
   const handleLevelPress = (level) => {
     setSelectedLevel(level);
+  };
+
+  const handleNavigate = async () => {
+    await fetchSentence();
   };
 
   useEffect(() => {
@@ -33,6 +42,7 @@ function News() {
         `http://34.22.72.154:12300/api/writing/news/level/${selectedLevel}`
       );
       const data = await response.json();
+      console.log(data);
       setArticles(data);
     } catch (error) {
       console.error(error);
@@ -41,10 +51,29 @@ function News() {
     }
   };
 
+  const fetchSentence = async () => {
+    try {
+      const response = await fetch(
+        `http://34.22.72.154:12300/api/writing/news/${selectedId}`
+      );
+      const data = await response.json();
+      setNewsSentenceList(data);
+      navigation.navigate("WritingNews", {
+        newsSentenceList: data,
+        articleTitle: selectedArticle.title,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const renderArticleItem = ({ item }) => (
     <TouchableOpacity
       style={[styles.item, selectedArticle === item && styles.selectedItem]}
-      onPress={() => setSelectedArticle(item)}
+      onPress={() => {
+        setSelectedArticle(item);
+        setSelectedId(item.id);
+      }}
     >
       <Image source={{ uri: item.s3Url }} style={styles.image} />
       <View style={styles.news}>
@@ -55,7 +84,6 @@ function News() {
       </View>
     </TouchableOpacity>
   );
-
 
   return (
     <View>
@@ -91,7 +119,10 @@ function News() {
             />
           </View>
           {selectedArticle && (
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => handleNavigate()}
+            >
               <Text style={styles.buttonText}>테스트 시작</Text>
             </TouchableOpacity>
           )}
