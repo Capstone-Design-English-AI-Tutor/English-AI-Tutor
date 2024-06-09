@@ -2,20 +2,21 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
-  Button,
   FlatList,
   StyleSheet,
   Image,
+  TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import recordingimg from "../assets/recording.png";
 import recordingstopimg from "../assets/recordingstop.png";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import axios from "axios";
+import { useNavigation } from "@react-navigation/native";
 
 const VoiceChatting = ({ route }) => {
+  const navigation = useNavigation();
   const { id } = route.params;
 
   const [log, setLog] = useState("");
@@ -24,6 +25,10 @@ const VoiceChatting = ({ route }) => {
   const [audio, setAudio] = useState(null); // 웹소켓 응답
   const [loading, setLoading] = useState(false);
   const [hint, setHint] = useState("");
+  const [result, setResult] = useState(null);
+  const [sentMsg, setSentMsg] = useState([]);
+  const [receivedMsg, setReceivedMsg] = useState([]);
+  const [isEnd, setIsEnd] = useState(false);
 
   const ws = useRef(null);
   const soundRef = useRef(new Audio.Sound());
@@ -36,6 +41,7 @@ const VoiceChatting = ({ route }) => {
     ws.current.onopen = () => {
       setLog("서버에 접속했습니다.");
       setHint("");
+      setIsEnd(false);
       console.log("WebSocket connected");
     };
 
@@ -164,7 +170,7 @@ const VoiceChatting = ({ route }) => {
 
   const handleGetHint = async () => {
     try {
-      const channelId = "110ec58a-a0f2-4ac4-8393-c866d813b8d1"; // 필요한 채널 ID를 여기에 입력
+      const channelId = "110ec58a-a0f2-4ac4-8393-c866d813b8d1";
       const result = await axios.post(
         `http://34.22.72.154:12300/api/conversation/help?channelId=${channelId}`
       );
@@ -176,10 +182,26 @@ const VoiceChatting = ({ route }) => {
     }
   };
 
+  const fetchResult = async () => {
+    setIsEnd(true);
+    const channelId = "110ec58a-a0f2-4ac4-8393-c866d813b8d1";
+    try {
+      const response = await fetch(
+        `http://34.22.72.154:12300/api/conversation/result?channelId=${channelId}`
+      );
+      const data = await response.json();
+      console.log(data);
+      setResult(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
   const disconnectWebSocket = () => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.close();
       setLog("WebSocket disconnected");
+      navigation.navigate("Chatting");
     } else {
       setLog("WebSocket is already disconnected");
     }
@@ -189,10 +211,10 @@ const VoiceChatting = ({ route }) => {
     <View style={styles.container}>
       <View style={styles.topContainer}>
         <Text>{log}</Text>
-      
-      <TouchableOpacity style={styles.stopButton} onPress={disconnectWebSocket}>
-        <Text>종료하기</Text>
-      </TouchableOpacity>
+
+        <TouchableOpacity style={styles.stopButton} onPress={disconnectWebSocket}>
+          <Text style={{color: "white", fontWeight: "bold"}}>종료하기</Text>
+        </TouchableOpacity>
       </View>
       {loading && (
         <View style={styles.loadingContainer}>
@@ -204,20 +226,37 @@ const VoiceChatting = ({ route }) => {
           <Text style={styles.hintText}>{hint}</Text>
         </View>
       )}
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.button} onPress={handleGetHint}>
-          <Text>힌트 보기</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={recording ? stopRecording : startRecording}>
-          <Image source={recording ? recordingstopimg : recordingimg} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => playAudio(audio)}
-        >
-          <Text>다시 듣기</Text>
-        </TouchableOpacity>
-      </View>
+      {!isEnd && (
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity style={styles.button} onPress={handleGetHint}>
+            <Text style={styles.buttonText}>힌트 보기</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={recording ? stopRecording : startRecording}
+          >
+            <Image source={recording ? recordingstopimg : recordingimg} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => playAudio(audio)}
+          >
+            <Text style={styles.buttonText}>다시 듣기</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {/* isEnd && (
+        <View style={styles.resultContainer}>
+          <Text>대화 결과</Text>
+          {result.map((item, index) => (
+            <View
+              key={index}
+              style={[styles.message, item.role === "user" ? styles.sent : styles.received]}
+            >
+              <Text>{item.content}</Text>
+            </View>
+          ))}
+        </View>
+      )*/}
     </View>
   );
 };
@@ -234,7 +273,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 10,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   message: {
     marginVertical: 5,
@@ -266,21 +305,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
-    left: 30,
+    left: 18,
     bottom: 80,
   },
   button: {
     padding: 20,
     backgroundColor: "#d9d9d9",
     borderRadius: 20,
-    marginHorizontal: 20,
+    marginHorizontal: 30,
+  },
+  buttonText: {
+    fontWeight: "bold",
   },
   stopButton: {
     padding: 12,
     backgroundColor: "#F88600",
     borderRadius: 20,
-    marginRight: 20,
-    marginLeft: 10,
   },
   hintContainer: {
     padding: 12,
@@ -291,5 +331,18 @@ const styles = StyleSheet.create({
   hintText: {
     fontSize: 17,
     color: "#333",
+  },
+  message: {
+    marginVertical: 5,
+    padding: 10,
+    borderRadius: 5,
+  },
+  sent: {
+    backgroundColor: "lightblue",
+    alignSelf: "flex-end",
+  },
+  received: {
+    backgroundColor: "lightgreen",
+    alignSelf: "flex-start",
   },
 });

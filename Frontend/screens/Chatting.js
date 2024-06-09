@@ -59,9 +59,9 @@ function Chatting() {
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
       />
-      <TouchableOpacity onPress={() => fetchSentence()}>
+      {/*<TouchableOpacity onPress={() => fetchSentence()}>
         <Text>가져오기</Text>
-      </TouchableOpacity>
+      </TouchableOpacity>*/}
     </View>
   );
 }
