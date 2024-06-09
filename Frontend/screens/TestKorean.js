@@ -41,7 +41,8 @@ function TestKorean() {
     Toast.show({
       type: "submit",
       text1: `${currentQuiz.quiz} : ${currentQuiz.answer}`,
-      text2: `내가 적은 답: ${currentQuiz.userAnswer}`,
+      text2: `내가 적은 답: ${userAnswer}`,
+      topOffset: 320,
     });
     setUserAnswer("");
     setCurrentIndex(currentIndex + 1);
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   answer: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     marginBottom: 5,
   },

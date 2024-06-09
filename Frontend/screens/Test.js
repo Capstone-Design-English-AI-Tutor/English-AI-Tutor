@@ -6,6 +6,7 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
 import { TestContext } from "../context/TestContext";
 import Toast from "react-native-toast-message";
@@ -56,6 +57,7 @@ function Test() {
         text2: `${currentQuiz.quiz} : ${currentQuiz.answer}`,
         visibilityTime: 2000, // 2초 동안 표시
         autoHide: true,
+        topOffset: 320,
       });
     } else {
       Toast.show({
@@ -64,6 +66,7 @@ function Test() {
         text2: `올바른 답은 ${currentQuiz.answer}입니다.`,
         visibilityTime: 2000,
         autoHide: true,
+        topOffset: 320,
       });
     }
     setUserAnswer("");

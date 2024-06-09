@@ -111,12 +111,16 @@ function Scan({ navigation, route }) {
           setSentenceList(responseData);
           console.log(responseData);
           if (responseData && responseData.length > 0) {
-            navigation.navigate("TestSentence");
+            setTimeout(() => {
+              navigation.navigate("TestSentence", {
+                sentenceList: responseData,
+              });
+            }, 7000); // 7초 후에
           } else {
             Toast.show({
-              type: 'error',
-              text1: '테스트 생성 중입니다...',
-              text2: '잠시 후에 다시 시도해 주세요'
+              type: "error",
+              text1: "테스트 생성 중입니다...",
+              text2: "잠시 후에 다시 시도해 주세요",
             });
           }
         } else {
@@ -130,17 +134,17 @@ function Scan({ navigation, route }) {
             }
           } else {
             Toast.show({
-              type: 'info',
-              text1: '테스트 생성 중입니다...',
-              text2: '잠시 후에 다시 시도해 주세요'
+              type: "info",
+              text1: "테스트 생성 중입니다...",
+              text2: "잠시 후에 다시 시도해 주세요",
             });
           }
         }
       } else {
         Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: '잠시 후에 다시 시도해 주세요'
+          type: "error",
+          text1: "Error",
+          text2: "잠시 후에 다시 시도해 주세요",
         });
       }
     } catch (error) {

@@ -27,8 +27,9 @@ const toastConfig = {
   ),
 };
 
-const TestSentence = () => {
-  const { sentenceList } = useContext(TestContext);
+const TestSentence = ({route}) => {
+  //const { sentenceList } = useContext(TestContext);
+  const { sentenceList } = route.params;
   const navigation = useNavigation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
