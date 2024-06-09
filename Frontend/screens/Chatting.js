@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Text,
   View,
@@ -15,19 +15,33 @@ import shopping from "../assets/shopping.png";
 import car from "../assets/car.png";
 
 const DATA = [
-  { id: "1", title: "새학기 친구 사귀기", image: friend },
-  { id: "2", title: "식당에서 음식 주문하기", image: burger },
-  { id: "3", title: "옷가게에서", image: shopping },
-  { id: "4", title: "친구와 여행", image: car },
+  { id: "1", title: "일상 대화", image: friend },
+  { id: "2", title: "면접 상황", image: burger },
+  { id: "3", title: "토론 상황", image: shopping },
+  { id: "4", title: "여행 상황", image: car },
 ];
 
 function Chatting() {
   const navigation = useNavigation();
-  
+  const [list, setList] = useState([]);
+
+  const fetchSentence = async () => {
+    try {
+      const response = await fetch(
+        `http://34.22.72.154:12300/api/conversation/list`
+      );
+      const data = await response.json();
+      console.log(data);
+      setList(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.item}
-      onPress={() => navigation.navigate("VoiceChat")}
+      onPress={() => navigation.navigate("VoiceChat", { id: item.id })}
     >
       <Image source={item.image} style={styles.image} />
       <View style={styles.text_container}>
@@ -45,6 +59,9 @@ function Chatting() {
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
       />
+      <TouchableOpacity onPress={() => fetchSentence()}>
+        <Text>가져오기</Text>
+      </TouchableOpacity>
     </View>
   );
 }

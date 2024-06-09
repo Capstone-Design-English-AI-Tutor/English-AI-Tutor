@@ -1,36 +1,46 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, Button, FlatList, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  FlatList,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+} from "react-native";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
+import recordingimg from "../assets/recording.png";
+import recordingstopimg from "../assets/recordingstop.png";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
-const VoiceChatting = () => {
-  const [log, setLog] = useState('');
+const VoiceChatting = ({ route }) => {
+  const { id } = route.params;
+
+  const [log, setLog] = useState("");
   const [messages, setMessages] = useState([]);
   const [recording, setRecording] = useState(null);
   const [recordingUri, setRecordingUri] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
   const [receivedMsg, setReceivedMsg] = useState([]);
   const [audio, setAudio] = useState(null); // 웹소켓 응답
+  const [loading, setLoading] = useState(false);
   const ws = useRef(null);
   const soundRef = useRef(new Audio.Sound());
 
   useEffect(() => {
     ws.current = new WebSocket(
-      "ws://34.22.72.154:12300/api/conversation/websocket/110ec58a-a0f2-4ac4-8393-c866d813b8d1?conversation_id=1"
+      `ws://34.22.72.154:12300/api/conversation/websocket/110ec58a-a0f2-4ac4-8393-c866d813b8d1?conversation_id=${id}`
     );
 
     ws.current.onopen = () => {
-      setLog('Connected to WebSocket server');
+      setLog("Connected to WebSocket server");
       console.log("WebSocket connected");
     };
 
     ws.current.onmessage = async (event) => {
-      console.log("응답", event.data);
+      setLoading(false);
       if (event.data instanceof ArrayBuffer) {
         // ArrayBuffer로부터 오디오 데이터를 읽고 base64로 변환
-        const uint8Array = new Uint8Array(event.data);
-        console.log("Uint8Array:", uint8Array);
-
         const base64Audio = arrayBufferToBase64(event.data);
         const uri = await saveBase64AsAudioFile(base64Audio);
         setAudio(uri);
@@ -47,6 +57,7 @@ const VoiceChatting = () => {
     ws.current.onerror = (error) => {
       console.log("WebSocket error:", error);
       setLog(`WebSocket error: ${error.message}`);
+      setLoading(false); // 에러가 발생하면 로딩 상태를 false로 설정
     };
 
     ws.current.onclose = (event) => {
@@ -76,9 +87,6 @@ const VoiceChatting = () => {
     await FileSystem.writeAsStringAsync(fileUri, base64, {
       encoding: FileSystem.EncodingType.Base64,
     });
-    const fileInfo = await FileSystem.getInfoAsync(fileUri);
-    console.log("received and save data", fileUri);
-    console.log("응답사이즈", fileInfo.size)
     return fileUri;
   };
 
@@ -127,7 +135,6 @@ const VoiceChatting = () => {
     const uri = recording.getURI();
 
     setRecordingUri(uri); // 저장된 URI를 state에 저장
-    await playAudio(uri);
 
     // mp3로 저장할 경로 생성
     const mp3Uri = `${FileSystem.cacheDirectory}recorded_audio.mp3`;
@@ -135,10 +142,6 @@ const VoiceChatting = () => {
       from: uri,
       to: mp3Uri,
     });
-    console.log("mp3변환", mp3Uri);
-    const fileInfo = await FileSystem.getInfoAsync(mp3Uri);
-    console.log("recording data", mp3Uri);
-    console.log("사이즈", fileInfo.size)
 
     try {
       const file = await fetch(mp3Uri);
@@ -149,10 +152,8 @@ const VoiceChatting = () => {
         const arrayBuffer = reader.result;
 
         // ArrayBuffer를 WebSocket을 통해 전송
+        setLoading(true); // 전송 시작시 로딩 상태를 true로 설정
         ws.current.send(arrayBuffer);
-        const base64 = arrayBufferToBase64(arrayBuffer);
-        //ws.current.send(base64);
-        //console.log("base64", base64);
 
         setMessages((prevMessages) => [
           ...prevMessages,
@@ -162,34 +163,38 @@ const VoiceChatting = () => {
       reader.readAsArrayBuffer(fileBlob);
     } catch (error) {
       console.error("Failed to read audio data", error);
+      setLoading(false); // 실패 시 로딩 상태를 false로 설정
     }
   };
 
-  const base64ToArrayBuffer = (base64) => {
-    let binaryString = "";
-    binaryString = atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  };
+  // const playRecording = async (uri) => {
+  //   if (uri) {
+  //     const { sound } = await Audio.Sound.createAsync({ uri });
+  //     await sound.playAsync();
+  //     console.log("리코딩", recordingUri);
+  //   } else {
+  //     console.log("No recording to play");
+  //   }
+  // };
 
-  const playRecording = async (uri) => {
-    if (uri) {
-      const { sound } = await Audio.Sound.createAsync({ uri });
-      await sound.playAsync();
-      console.log("리코딩", recordingUri);
+  const disconnectWebSocket = () => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.close();
+      setLog("WebSocket disconnected");
     } else {
-      console.log("No recording to play");
+      setLog("WebSocket is already disconnected");
     }
   };
 
   return (
     <View style={styles.container}>
       <Text>{log}</Text>
-      <FlatList
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      )}
+      {/* <FlatList
         data={messages}
         renderItem={({ item }) => (
           <View
@@ -205,8 +210,8 @@ const VoiceChatting = () => {
           </View>
         )}
         keyExtractor={(item, index) => index.toString()}
-      />
-      <FlatList
+      /> */}
+      {/* <FlatList
         data={receivedMsg}
         renderItem={({ item }) => (
           <View
@@ -220,12 +225,21 @@ const VoiceChatting = () => {
           </View>
         )}
         keyExtractor={(item, index) => index.toString()}
-      />
-      <Button
-        title={recording ? "Stop Recording" : "Start Recording"}
-        onPress={recording ? stopRecording : startRecording}
-      />
-  
+      /> */}
+      <View style={styles.bottomContainer}>
+        <TouchableOpacity style={styles.button} onPress={disconnectWebSocket}>
+          <Text>종료하기</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={recording ? stopRecording : startRecording}>
+          <Image source={recording ? recordingstopimg : recordingimg} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => playAudio(audio)}
+        >
+          <Text>응답 다시 듣기</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -255,5 +269,23 @@ const styles = StyleSheet.create({
     borderColor: "gray",
     padding: 10,
     marginVertical: 10,
+  },
+  loadingContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 20,
+  },
+  bottomContainer: {
+    display: "flex",
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  button: {
+    padding: 20,
+    backgroundColor: "#d9d9d9",
+    borderRadius: 20,
+    marginHorizontal: 20,
   },
 });
