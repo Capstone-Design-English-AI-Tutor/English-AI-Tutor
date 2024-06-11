@@ -1,6 +1,15 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import React from "react";
+import { TestTypeProvider } from "./context/TestContext";
 import Navigation from "./Navigation";
+import Toast from "react-native-toast-message";
+
 export default function App() {
-  return <Navigation />;
+  const toastRef = React.useRef();
+
+  return (
+    <TestTypeProvider>
+      <Navigation />
+      <Toast ref={toastRef} />
+    </TestTypeProvider>
+  );
 }

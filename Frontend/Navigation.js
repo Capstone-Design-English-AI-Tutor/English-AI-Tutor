@@ -8,13 +8,22 @@ import SignIn from "./screens/SignIn";
 import KakaoLogin from "./screens/KakaoLogin";
 import Scan from "./screens/Scan";
 import Voca from "./screens/Voca";
+import VocaFolders from "./screens/VocaFolders";
 import News from "./screens/News";
 import Chatting from "./screens/Chatting";
+import Camera from "./screens/Camera";
+import Test from "./screens/Test";
+import TestKorean from "./screens/TestKorean";
+import TestSentence from "./screens/TestSentence";
+import WritingNews from "./screens/WritingNews";
+
 import VoiceChat from "./screens/VoiceChat";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const ChatStack = createStackNavigator();
+const ScanStack = createStackNavigator();
+const WritingStack = createStackNavigator();
 
 function ChatStackScreen() {
   return (
@@ -27,9 +36,78 @@ function ChatStackScreen() {
       <ChatStack.Screen
         name="VoiceChat"
         component={VoiceChat}
-        options={{ title: "음식 주문하기" }}
+        options={{ title: "회화 챗봇" }}
       />
     </ChatStack.Navigator>
+  );
+}
+
+function ScanStackScreen() {
+  return (
+    <ScanStack.Navigator>
+      <ScanStack.Screen
+        name="Scan"
+        component={Scan}
+        options={{ headerShown: false }}
+      />
+      <ScanStack.Screen
+        name="Camera"
+        component={Camera}
+        options={{
+          title: "사진 찍기",
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <ScanStack.Screen
+        name="Test"
+        component={Test}
+        options={{ headerShown: false }}
+      />
+      <ScanStack.Screen
+        name="TestKorean"
+        component={TestKorean}
+        options={{ headerShown: false }}
+      />
+      <ScanStack.Screen
+        name="TestSentence"
+        component={TestSentence}
+        options={{ headerShown: false }}
+      />
+    </ScanStack.Navigator>
+  );
+}
+
+function WritingStackScreen() {
+  return (
+    < WritingStack.Navigator>
+      < WritingStack.Screen
+        name="Writing"
+        component={News}
+        options={{ headerShown: false }}
+      />
+      < WritingStack.Screen
+        name="WritingNews"
+        component={WritingNews}
+        options={{ headerShown: "영어 작문" }}
+      />
+    </ WritingStack.Navigator>
+  );
+}
+
+function VocaStackScreen() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="단어장 폴더"
+        component={VocaFolders}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Voca"
+        component={Voca}
+        options={{ title: "단어 목록" }}
+      />
+    </Stack.Navigator>
   );
 }
 
@@ -45,7 +123,7 @@ function BottomTabNavigation() {
     >
       <Tab.Screen
         name="Scan"
-        component={Scan}
+        component={ScanStackScreen}
         options={{
           title: "단어 테스트",
           tabBarLabel: "단어 테스트",
@@ -56,7 +134,7 @@ function BottomTabNavigation() {
       />
       <Tab.Screen
         name="Voca"
-        component={Voca}
+        component={VocaStackScreen}
         options={{
           title: "저장한 단어",
           tabBarLabel: "저장한 단어",
@@ -67,7 +145,7 @@ function BottomTabNavigation() {
       />
       <Tab.Screen
         name="News"
-        component={News}
+        component={WritingStackScreen}
         options={{
           title: "영어 작문하기",
           tabBarLabel: "영어 작문",
@@ -96,13 +174,12 @@ function getTabBarVisibility(route) {
     ? route.state.routes[route.state.index].name
     : route.params?.screen || "Scan";
 
-  if (routeName === "Scan" || routeName === "Voca") {
-    return true;
+  if (routeName === "Test" || routeName === "Camera" || routeName === "TestSentence") {
+    return false;
   }
 
-  return false;
+  return true;
 }
-
 function AppNavigator() {
   return (
     <NavigationContainer
