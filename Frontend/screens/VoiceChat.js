@@ -25,9 +25,7 @@ const VoiceChatting = ({ route }) => {
   const [audio, setAudio] = useState(null); // 웹소켓 응답
   const [loading, setLoading] = useState(false);
   const [hint, setHint] = useState("");
-  const [result, setResult] = useState(null);
-  const [sentMsg, setSentMsg] = useState([]);
-  const [receivedMsg, setReceivedMsg] = useState([]);
+  const [result, setResult] = useState([]);
   const [isEnd, setIsEnd] = useState(false);
 
   const ws = useRef(null);
@@ -196,9 +194,9 @@ const VoiceChatting = ({ route }) => {
       console.error(error);
     }
   };
-  
+
   const disconnectWebSocket = () => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+    if (ws.current) {
       ws.current.close();
       setLog("WebSocket disconnected");
       navigation.navigate("Chatting");
@@ -209,13 +207,12 @@ const VoiceChatting = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.topContainer}>
+      {!isEnd && <View style={styles.topContainer}>
         <Text>{log}</Text>
-
-        <TouchableOpacity style={styles.stopButton} onPress={disconnectWebSocket}>
-          <Text style={{color: "white", fontWeight: "bold"}}>종료하기</Text>
+        <TouchableOpacity style={styles.stopButton} onPress={fetchResult}>
+          <Text style={{ color: "white", fontWeight: "bold" }}>종료하기</Text>
         </TouchableOpacity>
-      </View>
+      </View>}
       {loading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
@@ -244,19 +241,43 @@ const VoiceChatting = ({ route }) => {
           </TouchableOpacity>
         </View>
       )}
-      {/* isEnd && (
+      {isEnd && (
         <View style={styles.resultContainer}>
-          <Text>대화 결과</Text>
-          {result.map((item, index) => (
-            <View
-              key={index}
-              style={[styles.message, item.role === "user" ? styles.sent : styles.received]}
-            >
-              <Text>{item.content}</Text>
-            </View>
-          ))}
+          <Text style={[styles.textStyle, {fontWeight: "bold"}]}>대화 결과</Text>
+          {result && result.length > 0 ? (
+            result.map((item, index) => (
+              <>
+                <View
+                  key={index}
+                  style={[
+                    styles.message,
+                    item.role === "user" ? styles.sent : styles.received,
+                  ]}
+                >
+                  <Text>{item.content}</Text>
+                </View>
+              </>
+            ))
+          ) : (
+            <>
+              <Text style={styles.textStyle}>
+                오류가 발생했습니다. 다시 시도해주세요.
+              </Text>
+              <TouchableOpacity
+                style={styles.retryButton}
+                onPress={fetchResult}
+              >
+                <Text style={{ color: "white", fontWeight: "bold" }}>
+                  다시 시도
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
-      )*/}
+      )}
+      {(isEnd && result) &&<TouchableOpacity style={styles.homeButton} onPress={disconnectWebSocket}>
+        <Text style={{ color: "white", fontWeight: "bold" }}>홈으로 이동</Text>
+      </TouchableOpacity>}
     </View>
   );
 };
@@ -276,9 +297,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   message: {
-    marginVertical: 5,
+    marginVertical: 12,
     padding: 10,
     borderRadius: 5,
+    fontSize: 15,
   },
   sent: {
     backgroundColor: "lightblue",
@@ -318,9 +340,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   stopButton: {
-    padding: 12,
+    width: 80,
+    padding: 10,
     backgroundColor: "#F88600",
     borderRadius: 20,
+    alignItems: "center",
   },
   hintContainer: {
     padding: 12,
@@ -332,17 +356,30 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: "#333",
   },
-  message: {
-    marginVertical: 5,
-    padding: 10,
-    borderRadius: 5,
+  resultContainer: {
+    padding: 5,
   },
-  sent: {
-    backgroundColor: "lightblue",
-    alignSelf: "flex-end",
+  textStyle: {
+    fontSize: 17,
+    marginVertical: 15,
   },
-  received: {
-    backgroundColor: "lightgreen",
-    alignSelf: "flex-start",
+  homeButton: {
+    width: "80%",
+    paddingVertical: 10,
+    backgroundColor: "#F88600",
+    borderRadius: 10,
+    alignItems: "center",
+    color: "white",
+    backgroundColor: "#3E4784",
+    marginHorizontal: "10%",
+    marginVertical: 15
+  },
+  retryButton: {
+    width: "80%",
+    backgroundColor: "blue",
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: "center",
+    margin: "10%",
   },
 });

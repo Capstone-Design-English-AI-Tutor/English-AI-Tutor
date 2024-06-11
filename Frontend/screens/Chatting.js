@@ -10,14 +10,14 @@ import {
 
 import { useNavigation } from "@react-navigation/native";
 import friend from "../assets/friend.png";
-import burger from "../assets/burger.png";
-import shopping from "../assets/shopping.png";
+import interview from "../assets/interview.png";
+import debate from "../assets/debate.png";
 import car from "../assets/car.png";
 
 const DATA = [
   { id: "1", title: "일상 대화", image: friend },
-  { id: "2", title: "면접 상황", image: burger },
-  { id: "3", title: "토론 상황", image: shopping },
+  { id: "2", title: "면접 상황", image: interview },
+  { id: "3", title: "토론 상황", image: debate },
   { id: "4", title: "여행 상황", image: car },
 ];
 
