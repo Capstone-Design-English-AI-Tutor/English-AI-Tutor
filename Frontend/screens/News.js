@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
-  FlatList,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
@@ -67,8 +66,9 @@ function News() {
     }
   };
 
-  const renderArticleItem = ({ item }) => (
+  const renderArticleItem = (item) => (
     <TouchableOpacity
+      key={item.id}
       style={[styles.item, selectedArticle === item && styles.selectedItem]}
       onPress={() => {
         setSelectedArticle(item);
@@ -109,14 +109,12 @@ function News() {
       {loading ? (
         <ActivityIndicator size="large" color="0000ff" />
       ) : (
-        <View>
-          <View style={styles.newsContainer} horizontal={false}>
+        <ScrollView style={styles.scrollContainer}>
+          <View style={styles.newsContainer}>
             <Text style={styles.text}>기사를 선택해주세요</Text>
-            <FlatList
-              data={articles}
-              renderItem={renderArticleItem}
-              keyExtractor={(item) => item.id.toString()}
-            />
+            <View >
+              {articles.map(renderArticleItem)}
+            </View>
           </View>
           {selectedArticle && (
             <TouchableOpacity
@@ -126,7 +124,7 @@ function News() {
               <Text style={styles.buttonText}>테스트 시작</Text>
             </TouchableOpacity>
           )}
-        </View>
+        </ScrollView>
       )}
     </View>
   );
@@ -206,7 +204,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 5,
-    marginBottom: 100,
+    marginBottom: 130,
   },
   buttonText: {
     color: "white",

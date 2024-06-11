@@ -5,23 +5,28 @@ import {
   StyleSheet,
   Button,
   TextInput,
+  ScrollView,
 } from "react-native";
 import * as Progress from "react-native-progress";
 import axios from "axios";
 
 function WritingNews({ route }) {
   const { newsSentenceList, articleTitle } = route.params; // 전달된 데이터 접근
-  
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [sentenceData, setSentenceData] = useState(null);
   const [grade, setGrade] = useState("");
   const [testResult, setTestResult] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const currentSentenceId =
+    currentIndex < newsSentenceList.length
+      ? newsSentenceList[currentIndex].sentenceId
+      : null;
+  const isVisible = currentIndex < newsSentenceList.length;
 
   const handleSubmit = async () => {
-    const currentSentenceId = newsSentenceList[currentIndex].sentenceId;
-
+    if (!isVisible) return;
     try {
       console.log("문장id", currentSentenceId);
       const response = await fetch(
@@ -100,7 +105,7 @@ function WritingNews({ route }) {
     testResult.forEach((error, index) => {
       const startIdx = error.startIdx;
       const endIdx = error.endIdx;
-      
+
       // Add the text before the error
       if (lastIndex < startIdx) {
         elements.push(
@@ -128,60 +133,117 @@ function WritingNews({ route }) {
         </Text>
       );
     }
-    return <Text>{elements}</Text>;
+    return <Text style={{ fontSize: 17 }}>{elements}</Text>;
+  };
+
+  const getGradeColor = (grade) => {
+    switch (grade) {
+      case "good":
+        return "#FFC700";
+      case "excellent":
+        return "#008000";
+      case "bad":
+        return "#FF0000";
+      default:
+        return "#000000";
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{articleTitle}</Text>
-      {showResult ? (
-        <View style={styles.resultContainer}>
-          <Text style={styles.resultText}>번역: {sentenceData.korean}</Text>
-          <Text style={styles.resultText}>원문: {sentenceData.english}</Text>
-          <Text style={styles.resultText}>내 답변:</Text>
-          <View style={styles.userAnswerContainer}>{highlightErrors()}</View>
-          <Text style={styles.resultText}>유사성 점수: {grade}</Text>
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorTitle}>문법/철자 검사</Text>
-            {testResult.map((error, index) => (
-              <View key={index} style={styles.errorItem}>
-                <Text>{error.error_message} (위치: {error.startIdx} - {error.endIdx})</Text>
-                <Text style={styles.replacementText}>수정 제안: {error.replacement}</Text>
-              </View>
-            ))}
-          </View>
-          <Button title="확인" onPress={handleConfirm} />
+      <View style={styles.sentenceContainer}>
+        <View style={styles.progressBar}>
+          <Progress.Bar
+            progress={progress}
+            width={null}
+            height={12}
+            color={"#2D31A6"}
+            borderRadius={16}
+            flex={1}
+            marginHorizontal={10}
+          />
+          <Text>
+            {currentIndex} / {newsSentenceList.length}
+          </Text>
         </View>
-      ) : (
-        <View style={styles.sentenceContainer}>
-          <View style={styles.progressBar}>
-            <Progress.Bar
-              progress={progress}
-              width={null}
-              height={12}
-              color={"#2D31A6"}
-              borderRadius={16}
-              flex={1}
-              marginHorizontal={10}
-            />
-            <Text>
-              {currentIndex} / {newsSentenceList.length}
-            </Text>
-          </View>
+        {isVisible && (
           <View style={styles.wrap}>
             <Text style={styles.text}>
               {newsSentenceList[currentIndex].korean}
             </Text>
           </View>
-          <TextInput
-            style={styles.input}
-            value={userAnswer}
-            onChangeText={setUserAnswer}
-            placeholder="여기에 입력하세요"
-          />
-          <Button title="제출" onPress={handleSubmit} />
-        </View>
-      )}
+        )}
+        {!showResult ? (
+          <>
+            {isVisible && (
+              <>
+                <TextInput
+                  style={styles.input}
+                  value={userAnswer}
+                  onChangeText={setUserAnswer}
+                  placeholder="여기에 입력하세요"
+                />
+                <Button title="제출" onPress={handleSubmit} />
+              </>
+            )}
+          </>
+        ) : (
+          <ScrollView style={styles.resultContainer}>
+            <View style={styles.gradeContainer}>
+              <Text style={styles.resultText}>유사성 점수:</Text>
+              <Text style={[styles.score, { color: getGradeColor(grade) }]}>
+                {grade}
+              </Text>
+            </View>
+            <Text style={styles.resultText}>원문 </Text>
+            <View style={styles.wrap}>
+              <Text style={{ fontSize: 17 }}>{sentenceData.english}</Text>
+            </View>
+            <Text style={styles.resultText}>나의 답변</Text>
+            <View style={styles.wrap}>
+              <View style={styles.userAnswerContainer}>
+                {highlightErrors()}
+              </View>
+            </View>
+            <Text style={styles.errorTitle}>문법/철자 검사</Text>
+            <View style={styles.errorContainer}>
+              {testResult.map((error, index) => (
+                <View key={index} style={styles.errorItem}>
+                  <Text style={{ fontSize: 17 }}>
+                    {index + 1}. {}
+                    {sentenceData.userAnswer.substring(
+                      error.startIdx,
+                      error.endIdx + 1
+                    )}
+                  </Text>
+                  <View style={styles.gradeContainer}>
+                    <View style={styles.grade}>
+                      <Text
+                        style={{
+                          color: "white",
+                          fontWeight: "bold",
+                          fontSize: 12,
+                        }}
+                      >
+                        {error.error}
+                      </Text>
+                    </View>
+                    <Text style={{ fontSize: 15 }}>{error.error_message}</Text>
+                  </View>
+                  <View style={[styles.gradeContainer, { marginBottom: 15 }]}>
+                    <Text style={{ fontSize: 16 }}>수정 제안: </Text>
+                    <Text style={styles.replacementText}>
+                      {error.replacement}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+            <Button title="확인" onPress={handleConfirm} />
+          </ScrollView>
+        )}
+      </View>
     </View>
   );
 }
@@ -194,7 +256,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   title: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
     marginHorizontal: 7,
@@ -203,7 +265,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F4F3F6",
     borderRadius: 30,
     padding: 20,
-    marginVertical: 20,
+    marginTop: 10,
+    marginBottom: 15,
   },
   text: {
     fontSize: 17,
@@ -221,10 +284,31 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   resultContainer: {
-    marginBottom: 20,
+    marginBottom: "70%",
+  },
+  gradeContainer: {
+    display: "flex",
+    flexDirection: "row",
+    marginVertical: 4,
+    alignItems: "center",
+  },
+  grade: {
+    color: "white",
+    backgroundColor: "#3E4784",
+    padding: 7,
+    borderRadius: 15,
+    marginRight: 5,
   },
   resultText: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+    marginHorizontal: 7,
+  },
+  score: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
   },
   progressBar: {
     flexDirection: "row",
@@ -233,26 +317,34 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   errorContainer: {
+    backgroundColor: "#F4F3F6",
+    borderRadius: 30,
+    paddingHorizontal: 15,
+    paddingVertical: 20,
     marginVertical: 10,
   },
   errorTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
+    marginTop: 10,
     marginBottom: 5,
+    marginHorizontal: 7,
   },
   errorItem: {
-    fontSize: 14,
+    fontSize: 17,
     marginBottom: 3,
+    marginHorizontal: 7,
   },
   replacementText: {
-    color: 'green',
+    color: "green",
+    fontSize: 16,
   },
   userAnswerContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
   errorText: {
-    textDecorationLine: 'underline',
-    textDecorationColor: 'red',
+    textDecorationLine: "underline",
+    textDecorationColor: "red",
   },
 });
