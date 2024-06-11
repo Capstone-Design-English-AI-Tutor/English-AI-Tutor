@@ -8,6 +8,7 @@ import SignIn from "./screens/SignIn";
 import KakaoLogin from "./screens/KakaoLogin";
 import Scan from "./screens/Scan";
 import Voca from "./screens/Voca";
+import VocaFolders from "./screens/VocaFolders";
 import News from "./screens/News";
 import Chatting from "./screens/Chatting";
 import Camera from "./screens/Camera";
@@ -93,6 +94,22 @@ function WritingStackScreen() {
   );
 }
 
+function VocaStackScreen() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="단어장 폴더"
+        component={VocaFolders}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Voca"
+        component={Voca}
+        options={{ title: "단어 목록" }}
+      />
+    </Stack.Navigator>
+  );
+}
 
 function BottomTabNavigation() {
   return (
@@ -117,7 +134,7 @@ function BottomTabNavigation() {
       />
       <Tab.Screen
         name="Voca"
-        component={Voca}
+        component={VocaStackScreen}
         options={{
           title: "저장한 단어",
           tabBarLabel: "저장한 단어",

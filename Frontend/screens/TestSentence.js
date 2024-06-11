@@ -6,11 +6,14 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  Modal,
+  Button,
+  Pressable
 } from "react-native";
-import { TestContext } from "../context/TestContext";
 import Toast from "react-native-toast-message";
 import * as Progress from "react-native-progress";
 import { useNavigation } from "@react-navigation/native";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const toastConfig = {
   success: ({ text1, text2 }) => (
@@ -27,21 +30,38 @@ const toastConfig = {
   ),
 };
 
-const TestSentence = ({route}) => {
-  //const { sentenceList } = useContext(TestContext);
+const TestSentence = ({ route }) => {
   const { sentenceList } = route.params;
   const navigation = useNavigation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [results, setResults] = useState([]);
   const [score, setScore] = useState(0);
+  const [quizList, setQuizList] = useState([]);
+  const [folders, setFolders] = useState([]);
+  const [currentFolder, setCurrentFolder] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [folderName, setFolderName] = useState("");
 
   useEffect(() => {
+    const transformedList = Object.values(sentenceList).map((item) => ({
+      ...item,
+      bookmarked: false, // 북마크 상태 추가
+    }));
+    setQuizList(transformedList);
     setCurrentIndex(0);
   }, [sentenceList]);
-  
+
+  const toggleBookmark = (index) => {
+    setQuizList((prevList) =>
+      prevList.map((item, idx) =>
+        idx === index ? { ...item, bookmarked: !item.bookmarked } : item
+      )
+    );
+  };
+
   const handleSubmit = () => {
-    const currentQuiz = sentenceList[currentIndex];
+    const currentQuiz = quizList[currentIndex];
     const isCorrect =
       userAnswer.trim().toLowerCase() === currentQuiz.answer.toLowerCase();
     setResults([
@@ -62,6 +82,7 @@ const TestSentence = ({route}) => {
         text2: `제출한 답 : ${userAnswer}`,
         visibilityTime: 2000, // 2초 동안 표시
         autoHide: true,
+        topOffset: 330,
       });
     } else {
       Toast.show({
@@ -70,17 +91,37 @@ const TestSentence = ({route}) => {
         text2: `올바른 답은 ${currentQuiz.answer}입니다.`,
         visibilityTime: 2000,
         autoHide: true,
+        topOffset: 330,
       });
     }
     setUserAnswer("");
     setCurrentIndex(currentIndex + 1);
   };
 
-  const handleExit = () => {
-    setCurrentIndex(sentenceList.length);
+  const handleCreateFolder = () => {
+    if (folderName.trim().length > 0) {
+      setFolders([...folders, { name: folderName, words: [] }]);
+      setFolderName("");
+      setIsModalVisible(false);
+    }
   };
 
-  if (currentIndex >= sentenceList.length) {
+  const saveBookmarkedWords = () => {
+    const bookmarkedWords = quizList.filter((item) => item.bookmarked);
+    setFolders((prevFolders) =>
+      prevFolders.map((folder) =>
+        folder.name === currentFolder
+          ? { ...folder, words: [...folder.words, ...bookmarkedWords] }
+          : folder
+      )
+    );
+  };
+
+  const handleExit = () => {
+    setCurrentIndex(quizList.length);
+  };
+
+  if (currentIndex >= quizList.length) {
     return (
       <View style={styles.container}>
         <Text style={styles.resultTitle}>문제 풀이 결과</Text>
@@ -90,12 +131,27 @@ const TestSentence = ({route}) => {
         <FlatList
           data={results}
           keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <View style={styles.resultItem}>
-              <Text style={styles.answer}>출제 단어: {item.answer}</Text>
-              <Text style={styles.answer}>{item.english_question}</Text>
-              <Text style={styles.answer}>{item.korean_translation}</Text>
-              <Text style={styles.userAnswer}>내가 적은 답: {item.answer}</Text>
+              <View style={styles.icon}>
+                <Text style={styles.answer}>{item.answer}</Text>
+                <TouchableOpacity onPress={() => toggleBookmark(index)}>
+                  <MaterialIcons
+                    name={
+                      quizList[index].bookmarked
+                        ? "bookmark-add"
+                        : "bookmark-border"
+                    }
+                    color="#999999"
+                    size={50}
+                  />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.quiz}>{item.english_question}</Text>
+              <Text style={styles.quiz}>{item.korean_translation}</Text>
+              <Text style={styles.userAnswer}>
+                내가 적은 답: {item.userAnswer}
+              </Text>
               {item.isCorrect ? (
                 <Text style={styles.correct}>맞은 단어</Text>
               ) : (
@@ -104,56 +160,102 @@ const TestSentence = ({route}) => {
             </View>
           )}
         />
-        <TouchableOpacity
-          style={styles.home}
-          onPress={() => navigation.navigate("Scan")}
-        >
-          <Text
-            style={{
-              color: "white",
-              fontSize: 16,
-              fontWeight: "bold",
-              textAlign: "center",
-            }}
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity
+            style={styles.folder}
+            onPress={() => setIsModalVisible(true)}
           >
-            홈으로 가기
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={{
+                color: "white",
+                fontSize: 16,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
+              폴더 생성
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.home}
+            onPress={() => navigation.navigate("Scan")}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
+              홈으로 가기
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <Modal
+          transparent={true}
+          visible={isModalVisible}
+          animationType="slide"
+          onRequestClose={() => setIsModalVisible(false)}
+        >
+          <Pressable
+          onPress={() => {
+            setIsModalVisible(false);
+          }}
+          style={styles.modalBackground}
+        >
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>폴더 이름 입력</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={folderName}
+              onChangeText={setFolderName}
+            />
+            <View style={styles.modalButtonContainer}>
+              <Button title="생성" onPress={handleCreateFolder} />
+              <Button title="취소" onPress={() => setIsModalVisible(false)} />
+            </View>
+          </View>
+          </Pressable>
+        </Modal>
         <Toast config={toastConfig} ref={(ref) => Toast.setRef(ref)} />
       </View>
     );
   }
 
-  const progress = currentIndex / sentenceList.length;
+  const progress = currentIndex / quizList.length;
 
   return (
     <View style={styles.container}>
-      {sentenceList && sentenceList.length > 0 ? (<View style={styles.progresContainer}>
-        <Progress.Bar
-          progress={progress}
-          width={null}
-          height={12}
-          color={"#2D31A6"}
-          style={styles.progress}
-          borderRadius={16}
-          flex={1}
-          marginHorizontal={10}
-        />
-        <Text>
-          {currentIndex}/{sentenceList.length}
-        </Text>
-        <TouchableOpacity style={styles.close} onPress={handleExit}>
-          <Text style={{ fontSize: 15, color: "white" }}>종료</Text>
-        </TouchableOpacity>
-      </View>) : <Text>Loading...</Text>}
+      {quizList && quizList.length > 0 ? (
+        <View style={styles.progresContainer}>
+          <Progress.Bar
+            progress={progress}
+            width={null}
+            height={12}
+            color={"#2D31A6"}
+            style={styles.progress}
+            borderRadius={16}
+            flex={1}
+            marginHorizontal={10}
+          />
+          <Text>
+            {currentIndex}/{quizList.length}
+          </Text>
+          <TouchableOpacity style={styles.close} onPress={handleExit}>
+            <Text style={{ fontSize: 15, color: "white" }}>종료</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <Text>Loading...</Text>
+      )}
 
-      {sentenceList && sentenceList.length > 0 ? (
+      {quizList && quizList.length > 0 ? (
         <>
           <Text style={styles.quizText}>
-            {sentenceList[currentIndex].english_question}
+            {quizList[currentIndex].english_question}
           </Text>
           <Text style={styles.quizKor}>
-            {sentenceList[currentIndex].korean_translation}
+            {quizList[currentIndex].korean_translation}
           </Text>
           <TextInput
             style={styles.input}
@@ -199,7 +301,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     textAlign: "left",
     marginBottom: 10,
-    marginLeft: 20,
+    marginHorizontal: 15,
     marginTop: 20,
     fontWeight: "bold",
   },
@@ -227,9 +329,19 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
   },
+  icon: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   answer: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
+    marginBottom: 5,
+  },
+  quiz: {
+    fontSize: 16,
     marginBottom: 5,
   },
   userAnswer: {
@@ -288,11 +400,70 @@ const styles = StyleSheet.create({
     marginBottom: 7,
     fontSize: 18,
   },
-  home: {
+  bottomContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+  },
+  folder: {
     paddingVertical: 15,
-    backgroundColor: "#1849A9",
+    paddingHorizontal: 45,
     marginTop: 15,
     textAlign: "center",
     borderRadius: 8,
+    backgroundColor: "#1849A9",
+  },
+  home: {
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    marginTop: 15,
+    textAlign: "center",
+    borderRadius: 8,
+    backgroundColor: "#ccc",
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.65)",
+    justifyContent: "flex-end"
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.65)",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  modalView: {
+    width: "85%",
+    backgroundColor: "white",
+    paddingVertical: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    paddingVertical: 100,
+    borderRadius: 30,
+  },
+  modalButtonContainer: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+  },
+  modalTitle: {
+    fontSize: 20,
+    marginBottom: 20,
+  },
+  modalInput: {
+    height: 40,
+    borderColor: "gray",
+    borderWidth: 1,
+    width: "70%",
+    paddingHorizontal: 10,
+    marginBottom: 20,
   },
 });

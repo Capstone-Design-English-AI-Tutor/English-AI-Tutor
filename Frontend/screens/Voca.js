@@ -3,17 +3,20 @@ import { View, Text, StyleSheet, FlatList } from "react-native";
 import * as Speech from "expo-speech";
 import IconButton from "../components/UI/IconButton";
 
-const data = [
-  { id: "1", word: "appreciate", meaning: "~을 고맙게 생각하다" },
-  { id: "2", word: "impressive", meaning: "인상적인" },
-  { id: "3", word: "delicious", meaning: "맛있는" },
-  { id: "4", word: "beautiful", meaning: "아름다운" },
-  { id: "5", word: "wonderful", meaning: "멋진" },
-  { id: "6", word: "wonderful", meaning: "멋진" },
-  { id: "7", word: "wonderful", meaning: "멋진" },
-  { id: "8", word: "wonderful", meaning: "멋진" },
-];
-
+const wordData = {
+  '1': [
+    { id: "1", word: "appreciate", meaning: "~을 고맙게 생각하다" },
+    { id: "2", word: "impressive", meaning: "인상적인" },
+  ],
+  '2': [
+    { id: "3", word: "delicious", meaning: "맛있는" },
+    { id: "4", word: "beautiful", meaning: "아름다운" },
+  ],
+  '3': [
+    { id: "5", word: "wonderful", meaning: "멋진" },
+    { id: "6", word: "excellent", meaning: "훌륭한" },
+  ],
+};
 function renderItem({ item }) {
   // 단어 눌렀을 때 TTS
   const speak = (word) => {
@@ -40,24 +43,26 @@ function renderItem({ item }) {
           size={36}
           style={styles.icon}
           color="#B7B7B7"
-          onPress={() => speak(item.word)} // 아이콘 눌렀을 때 소리 재생
+          onPress={() => speak(item.word)}
         />
       </View>
     </View>
   );
 }
 
-function Voca() {
+function Voca({ route }) {
+  const { folderId } = route.params;
+  const data = wordData[folderId] || [];
+
   return (
     <FlatList
       data={data}
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
-      style={styles.flatlist}
+      style={styles.flatList}
     />
   );
 }
-
 export default Voca;
 
 const styles = StyleSheet.create({

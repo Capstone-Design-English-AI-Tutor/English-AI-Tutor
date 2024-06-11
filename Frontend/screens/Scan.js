@@ -60,7 +60,7 @@ function Scan({ navigation, route }) {
 
     try {
       const response = await axios.post(
-        `http://144.24.83.40:8081/api/ocr?email=komg00@naver.com`,
+        `http://144.24.83.40:8081/api/quiz/ocr?email=test%40khu.ac.kr`,
         formData,
         {
           headers: {
@@ -97,10 +97,11 @@ function Scan({ navigation, route }) {
   const CreateTest = async () => {
     try {
       const response = await axios.post(
-        `http://144.24.83.40:8081/api/problem/${testType}?email=komg00@naver.com`,
+        `http://144.24.83.40:8081/api/quiz/problem/${testType}?email=test%40khu.ac.kr`,
         {},
         {
           headers: {
+            'Accept': 'application/json',
             "Content-Type": "application/json",
           },
         }
@@ -111,11 +112,9 @@ function Scan({ navigation, route }) {
           setSentenceList(responseData);
           console.log(responseData);
           if (responseData && responseData.length > 0) {
-            setTimeout(() => {
-              navigation.navigate("TestSentence", {
-                sentenceList: responseData,
-              });
-            }, 7000); // 7초 후에
+            navigation.navigate("TestSentence", {
+              sentenceList: responseData,
+            });
           } else {
             Toast.show({
               type: "error",
@@ -124,9 +123,9 @@ function Scan({ navigation, route }) {
             });
           }
         } else {
-          setQuizList(responseData.quizList);
-          console.log(responseData.quizList);
-          if (responseData.quizList && responseData.quizList.length > 0) {
+          setQuizList(responseData.quiz_list);
+          console.log(responseData.quiz_list);
+          if (responseData) {
             if (testType === "english") {
               navigation.navigate("Test");
             } else if (testType === "korean") {
@@ -194,7 +193,7 @@ function Scan({ navigation, route }) {
         <ActivityIndicator
           size="large"
           color="#7F56D9"
-          style={{ marginTop: 20 }}
+          style={{ marginVertical: 40 }}
         />
       ) : (
         result && (
@@ -240,7 +239,7 @@ function Scan({ navigation, route }) {
           </ScrollView>
         )
       )}
-      {result && (
+      {(!loading && result) && (
         <TouchableOpacity
           style={styles.testButton}
           onPress={() => setModalVisible(true)}
@@ -250,7 +249,7 @@ function Scan({ navigation, route }) {
       )}
 
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
@@ -373,7 +372,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   resultContainer: {
-    height: 380,
+    height: "66%",
     marginTop: 30,
     paddingBottom: 30,
     backgroundColor: "#f9f9f9",
@@ -400,10 +399,13 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   testButton: {
+    width: "85%",
     backgroundColor: "#7F56D9",
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: "center",
+    marginHorizontal: "7.5%",
+    marginTop: 30
   },
   modalBackground: {
     flex: 1,
